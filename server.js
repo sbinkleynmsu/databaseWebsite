@@ -1,52 +1,123 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const cors = require('cors');
+const mysql = require('mysql2');
+const bodyParser = require('body-parser');
+
+// Create an Express application
 const app = express();
+const port = 3000;
 
-// Enable CORS for all origins
-app.use(cors());
+// Parse incoming request bodies in JSON format
+app.use(bodyParser.json());
 
-// Serve static files from the "public" directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Set up MySQL connection
+const db = mysql.createConnection({
+  host: 'localhost',          // Hostname (usually localhost)
+  user: 'root',      // Replace with your MySQL username
+  password: '218023.Copiper$1',  // Replace with your MySQL password
+  database: 'abcmediabinkleypfeiffer',  // The name of your database
+  port: 3301
+});
 
-// Your existing code for the '/save-data' route
-app.use(express.json());
+// Establish the connection
+db.connect((err) => {
+  if (err) {
+    console.error('Error connecting to the database:', err);
+    process.exit(1); // Exit if there is an error connecting to the database
+  } else {
+    console.log('Connected to the MySQL database.');
+  }
+});
 
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
-}
+// Example route to insert a new display
+app.post('/displays', (req, res) => {
+  const { serialNo, schedulerSystem, modelNo } = req.body;
 
-app.post('/save-data', (req, res) => {
-    const { tab, data } = req.body;
+  // Insert query
+  const query = 'INSERT INTO DigitalDisplay (serialNo, schedulerSystem, modelNo) VALUES (?, ?, ?)';
 
-    const filePaths = {
-        clients: path.join(dataDir, 'clients.txt'),
-        AdmWorkHours: path.join(dataDir, 'AdmWorkHours.txt'),
-        video: path.join(dataDir, 'video.txt'),
-    };
-
-    if (!filePaths[tab]) {
-        return res.status(400).send('Invalid tab');
+  db.query(query, [serialNo, schedulerSystem, modelNo], (err, result) => {
+    if (err) {
+      console.error('Error inserting display:', err);
+      res.status(500).send('Failed to insert digital display.');
+    } else {
+      console.log('Display inserted:', result);
+      res.status(200).send('Digital display inserted successfully.');
     }
+  });
+});
 
-    const dataString = JSON.stringify(data) + '\n';
+// Route to fetch all digital displays
+app.get('/displays', (req, res) => {
+  const query = 'SELECT * FROM DigitalDisplay';
 
-    fs.appendFile(filePaths[tab], dataString, (err) => {
-        if (err) {
-            return res.status(500).send('Failed to save data');
-        }
-        res.send('Data saved successfully');
-    });
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching displays:', err);
+      res.status(500).send('Failed to fetch digital displays.');
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+// Route to search digital displays by scheduler system
+app.get('/displays/search', (req, res) => {
+  const { schedulerSystem } = req.query;
+
+  const query = 'SELECT * FROM DigitalDisplay WHERE schedulerSystem = ?';
+
+  db.query(query, [schedulerSystem], (err, results) => {
+    if (err) {
+      console.error('Error searching displays:', err);
+      res.status(500).send('Failed to search digital displays.');
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+// Route to delete a digital display by serial number
+app.delete('/displays/:serialNo', (req, res) => {
+  const { serialNo } = req.params;
+
+  const query = 'DELETE FROM DigitalDisplay WHERE serialNo = ?';
+
+  db.query(query, [serialNo], (err, result) => {
+    if (err) {
+      console.error('Error deleting display:', err);
+      res.status(500).send('Failed to delete digital display.');
+    } else {
+      res.status(200).send(`Digital display with serialNo ${serialNo} deleted successfully.`);
+    }
+  });
+});
+
+// Route to update a digital display by serial number
+app.put('/displays/:serialNo', (req, res) => {
+  const { serialNo } = req.params;
+  const { schedulerSystem, modelNo } = req.body;
+
+  const query = 'UPDATE DigitalDisplay SET schedulerSystem = ?, modelNo = ? WHERE serialNo = ?';
+
+  db.query(query, [schedulerSystem, modelNo, serialNo], (err, result) => {
+    if (err) {
+      console.error('Error updating display:', err);
+      res.status(500).send('Failed to update digital display.');
+    } else {
+      res.status(200).send(`Digital display with serialNo ${serialNo} updated successfully.`);
+    }
+  });
 });
 
 // Start the server
-const port = 3000;
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
 
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
+
+  
 
 
 

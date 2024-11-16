@@ -3,64 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABC Media</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Digital Display Management</title>
+    <link rel="stylesheet" href="tabs.css">
 </head>
 <body>
-    <header>
-        <h1>ABC Media</h1>
-        <nav>
-            <ul class="tabs">
-                <li><button data-tab="clients">Clients</button></li>
-                <li><button data-tab="AdmWorkHours">Admin Work Hours</button></li>
-                <li><button data-tab="video">Videos</button></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="clients" class="tab-content">
-            <h2>Clients</h2>
-            <form id="clients-form">
-                <input type="hidden" id="tab" name="tab" value="clients">
-                <label for="client_id">Client ID:</label>
-                <input type="text" id="client_id" name="client_id" required>
-                <label for="name">Client Name:</label>
-                <input type="text" id="name" name="name" required>
-                <label for="phone">Client Phone:</label>
-                <input type="text" id="phone" name="phone" required>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-                <button type="submit">Submit</button>
-            </form>
-        </section>
-
-        <section id="AdmWorkHours" class="tab-content">
-            <h2>Orders</h2>
-            <form id="AdmWorkHours-form">
-                <input type="hidden" id="tab" name="tab" value="AdmWorkHours">
-                <label for="emp_id">Employee ID:</label>
-                <input type="text" id="emp_id" name="emp_id" required>
-                <label for="date">Date:</label>
-                <input type="date" id="date" name="date" required>
-                <label for="hours">Hours:</label>
-                <input type="time" id="hours" name="hours" required>
-                <button type="submit">Submit</button>
-            </form>
-        </section>
-        
-        <section id="video" class="tab-content">
-            <h2>Videos</h2>
-            <form id="products-form">
-                <input type="hidden" id="tab" name="tab" value="video">
-                <label for="video_code">Video Code:</label>
-                <input type="text" id="video_code" name="video_code" required>
-                <label for="video_length">Video Length:</label>
-                <input type="number" id="video_length" name="video_length" required>
-                <button type="submit">Submit</button>
-            </form>
-        </section>
-    </main>
-    <script src="script.js"></script>
+    <div class="tabs">
+        <div class="tab-content">
+            <div id="insertTab" class="tab active">
+                <h2>Insert Digital Display</h2>
+                <form id="insertForm">
+                    <label for="insertSerialNo">Serial Number:</label><br>
+                    <input type="text" id="insertSerialNo" name="serialNo" required><br>
+                    <label for="insertSchedulerSystem">Scheduler System:</label><br>
+                    <input type="text" id="insertSchedulerSystem" name="schedulerSystem" required><br>
+                    <label for="insertModelNo">Model Number:</label><br>
+                    <input type="text" id="insertModelNo" name="modelNo" required><br>
+                    <button type="submit">Insert</button>
+                </form>
+            </div>
+            <div id="searchTab" class="tab">
+                <h2>Search Digital Displays</h2>
+                <form id="searchForm">
+                    <label for="searchSchedulerSystem">Scheduler System:</label><br>
+                    <input type="text" id="searchSchedulerSystem" name="schedulerSystem" required><br>
+                    <button type="submit">Search</button>
+                </form>
+                <div id="searchResults"></div>
+            </div>
+            <div id="deleteTab" class="tab">
+                <h2>Delete Digital Display</h2>
+                <form id="deleteForm">
+                    <label for="deleteSerialNo">Serial Number:</label><br>
+                    <input type="text" id="deleteSerialNo" name="serialNo" required><br>
+                    <button type="submit">Delete</button>
+                </form>
+            </div>
+            <div id="updateTab" class="tab">
+                <h2>Update Digital Display</h2>
+                <form id="updateForm">
+                    <label for="updateSerialNo">Serial Number:</label><br>
+                    <input type="text" id="updateSerialNo" name="serialNo" required><br>
+                    <label for="updateSchedulerSystem">New Scheduler System:</label><br>
+                    <input type="text" id="updateSchedulerSystem" name="schedulerSystem"><br>
+                    <label for="updateModelNo">New Model Number:</label><br>
+                    <input type="text" id="updateModelNo" name="modelNo"><br>
+                    <button type="submit">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 
