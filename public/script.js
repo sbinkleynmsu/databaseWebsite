@@ -1,51 +1,53 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const tabs = document.querySelectorAll(".tabs button");
-    const tabContents = document.querySelectorAll(".tab-content");
+// Wait for the document to be ready before adding event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('insertDisplayForm'); // Get the form
+    const resultContainer = document.getElementById('resultContainer'); // Div for result message (optional)
 
-    tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            // Remove active class from all tabs and contents
-            tabs.forEach(t => t.classList.remove("active"));
-            tabContents.forEach(content => content.classList.remove("active"));
+    form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
 
-            // Add active class to clicked tab and corresponding content
-            tab.classList.add("active");
-            document.getElementById(tab.getAttribute("data-tab")).classList.add("active");
+        const serialNo = document.getElementById('serialNo').value;
+        const schedulerSystem = document.getElementById('schedulerSystem').value;
+        const modelNo = document.getElementById('modelNo').value;
+
+        // Prepare the data to be sent to the server
+        const formData = {
+            serialNo,
+            schedulerSystem,
+            modelNo
+        };
+
+        // Send a POST request to the server with the form data
+        fetch('/displays', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Display the response from the server (success or error message)
+            displayMessage(data, resultContainer);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            displayMessage('An error occurred while inserting the display.', resultContainer, 'error');
         });
     });
 
-    // Activate the first tab and content by default
-    tabs[0].click();
+    // Function to display success or error messages
+    function displayMessage(message, container, type = 'success') {
+        // Clear any previous messages
+        container.innerHTML = '';
 
-    // Handle form submissions for each tab
-    const handleFormSubmit = (formId, tabName) => {
-        const form = document.getElementById(formId);
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-        
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-        
-            fetch('/save-data', { // Assuming your server has a route '/save-data'
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ tab: tabName, data: data }),
-            })
-            .then(response => response.text())
-            .then(message => {
-                alert(message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        });
-    };
+        // Create a new message element
+        const messageElement = document.createElement('div');
+        messageElement.classList.add(type);
+        messageElement.innerText = message;
 
-    // Initialize form submit handlers for each tab
-    handleFormSubmit('clients-form', 'clients');
-    handleFormSubmit('AdmWorkHours-form', 'AdmWorkHours');
-    handleFormSubmit('products-form', 'video');
+        // Append the message to the result container
+        container.appendChild(messageElement);
+    }
 });
 

@@ -1,10 +1,11 @@
 {
   "name": "databasewebsite",
   "version": "1.0.0",
-  "description": "",
+  "description": "instructions to run:\r     1. install all packages using npm install express and npm install cors\r     2. start server with \"node server.js\"\r     3. in browser enter \"localhost:3000\"\r     4. enter data through one of the tabs\r     5. view data in data folder \"data\"",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +15,7 @@
     "cors": "^2.8.5",
     "csv-writer": "^1.6.0",
     "express": "^4.21.1",
-    "mongodb": "^6.10.0"
+    "mongodb": "^6.10.0",
+    "mysql2": "^3.11.4"
   }
 }
