@@ -14,10 +14,12 @@
                 <li><button data-tab="clients">Clients</button></li>
                 <li><button data-tab="AdmWorkHours">Admin Work Hours</button></li>
                 <li><button data-tab="video">Videos</button></li>
+                <li><button data-tab="viewData">View Data</button></li> <!-- New Tab -->
             </ul>
         </nav>
     </header>
     <main>
+        <!-- Clients Section -->
         <section id="clients" class="tab-content">
             <h2>Clients</h2>
             <form id="clients-form">
@@ -34,6 +36,7 @@
             </form>
         </section>
 
+        <!-- Admin Work Hours Section -->
         <section id="AdmWorkHours" class="tab-content">
             <h2>Orders</h2>
             <form id="AdmWorkHours-form">
@@ -47,7 +50,8 @@
                 <button type="submit">Submit</button>
             </form>
         </section>
-        
+
+        <!-- Videos Section -->
         <section id="video" class="tab-content">
             <h2>Videos</h2>
             <form id="products-form">
@@ -59,9 +63,24 @@
                 <button type="submit">Submit</button>
             </form>
         </section>
+
+        <!-- View Data Section (New) -->
+        <section id="viewData" class="tab-content">
+            <h2>View Data</h2>
+            <form id="viewData-form">
+                <label for="tabName">Enter Tab Name (clients, AdmWorkHours, or video):</label>
+                <input type="text" id="tabName" name="tabName" required>
+                <button type="submit">View Data</button>
+            </form>
+            <div id="viewDataOutput">
+                <h3>Data:</h3>
+                <pre id="dataOutput"></pre> <!-- Will display the fetched data here -->
+            </div>
+        </section>
     </main>
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
