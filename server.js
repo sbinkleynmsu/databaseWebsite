@@ -11,42 +11,47 @@ app.use(bodyParser.json());
 
 // Set up MySQL connection
 const db = mysql.createConnection({
-  host: 'localhost',          // Hostname (usually localhost)
-  user: 'root',      // Replace with your MySQL username
-  password: '218023.Copiper$1',  // Replace with your MySQL password
-  database: 'abcmediabinkleypfeiffer',  // The name of your database
+  host: 'localhost',        
+  user: 'root',     
+  password: '218023.Copiper$1',
+  database: 'abcmediabinkleypfeiffer',  
   port: 3301
 });
 
-// Establish the connection
+//connect to database
 db.connect((err) => {
+  //exit if there is an error connecting to database
   if (err) {
     console.error('Error connecting to the database:', err);
-    process.exit(1); // Exit if there is an error connecting to the database
-  } else {
+    process.exit(1); 
+  } 
+  //else connected
+  else {
     console.log('Connected to the MySQL database.');
   }
 });
 
-// Example route to insert a new display
+//insert a new display
 app.post('/displays', (req, res) => {
-  const { serialNo, schedulerSystem, modelNo } = req.body;
-
-  // Insert query
-  const query = 'INSERT INTO DigitalDisplay (serialNo, schedulerSystem, modelNo) VALUES (?, ?, ?)';
-
-  db.query(query, [serialNo, schedulerSystem, modelNo], (err, result) => {
-    if (err) {
-      console.error('Error inserting display:', err);
-      res.status(500).send('Failed to insert digital display.');
-    } else {
-      console.log('Display inserted:', result);
-      res.status(200).send('Digital display inserted successfully.');
-    }
+    const { serialNo, schedulerSystem, modelNo } = req.body;
+    const query = 'INSERT INTO DigitalDisplay (serialNo, schedulerSystem, modelNo) VALUES (?, ?, ?)';
+    db.query(query, [serialNo, schedulerSystem, modelNo], (err, result) => {
+      if (err) {
+        res.status(500).send('Failed to insert digital display.');
+      } else {
+        const fetchQuery = 'SELECT * FROM DigitalDisplay WHERE serialNo = ?';
+        db.query(fetchQuery, [serialNo], (err, display) => {
+          if (err) {
+            res.status(500).send('Inserted but failed to fetch display.');
+          } else {
+            res.status(200).json(display[0]);
+          }
+        });
+      }
+    });
   });
-});
 
-// Route to fetch all digital displays
+//get all digital displays
 app.get('/displays', (req, res) => {
   const query = 'SELECT * FROM DigitalDisplay';
 
@@ -54,13 +59,14 @@ app.get('/displays', (req, res) => {
     if (err) {
       console.error('Error fetching displays:', err);
       res.status(500).send('Failed to fetch digital displays.');
-    } else {
+    } 
+    else {
       res.status(200).json(results);
     }
   });
 });
 
-// Route to search digital displays by scheduler system
+//search digital displays by scheduler system
 app.get('/displays/search', (req, res) => {
   const { schedulerSystem } = req.query;
 
@@ -76,7 +82,7 @@ app.get('/displays/search', (req, res) => {
   });
 });
 
-// Route to delete a digital display by serial number
+//delete a digital display by serial number
 app.delete('/displays/:serialNo', (req, res) => {
   const { serialNo } = req.params;
 
@@ -92,7 +98,7 @@ app.delete('/displays/:serialNo', (req, res) => {
   });
 });
 
-// Route to update a digital display by serial number
+//update a digital display by serial number
 app.put('/displays/:serialNo', (req, res) => {
   const { serialNo } = req.params;
   const { schedulerSystem, modelNo } = req.body;
@@ -109,7 +115,7 @@ app.put('/displays/:serialNo', (req, res) => {
   });
 });
 
-// Start the server
+//start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
