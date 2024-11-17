@@ -1,53 +1,82 @@
-// Wait for the document to be ready before adding event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('insertDisplayForm'); // Get the form
-    const resultContainer = document.getElementById('resultContainer'); // Div for result message (optional)
+document.addEventListener('DOMContentLoaded', function () {
+    const resultContainer = document.getElementById('resultsContent');
 
-    form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
+    // Handle Insert Form
+    document.getElementById('insertForm').addEventListener('submit', function (event) {
+        event.preventDefault();
 
-        const serialNo = document.getElementById('serialNo').value;
-        const schedulerSystem = document.getElementById('schedulerSystem').value;
-        const modelNo = document.getElementById('modelNo').value;
+        const serialNo = document.getElementById('insertSerialNo').value;
+        const schedulerSystem = document.getElementById('insertSchedulerSystem').value;
+        const modelNo = document.getElementById('insertModelNo').value;
 
-        // Prepare the data to be sent to the server
-        const formData = {
-            serialNo,
-            schedulerSystem,
-            modelNo
-        };
-
-        // Send a POST request to the server with the form data
         fetch('/displays', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ serialNo, schedulerSystem, modelNo }),
         })
-        .then(response => response.text())
-        .then(data => {
-            // Display the response from the server (success or error message)
-            displayMessage(data, resultContainer);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            displayMessage('An error occurred while inserting the display.', resultContainer, 'error');
-        });
+            .then((res) => res.json())
+            .then((data) => {
+                displayResults([data], resultContainer, 'Inserted Display');
+            })
+            .catch((err) => {
+                console.error(err);
+                resultContainer.innerHTML = '<div class="error">Failed to insert display.</div>';
+            });
     });
 
-    // Function to display success or error messages
-    function displayMessage(message, container, type = 'success') {
-        // Clear any previous messages
-        container.innerHTML = '';
+    // Handle Search Form
+    document.getElementById('searchForm').addEventListener('submit', function (event) {
+        event.preventDefault();
 
-        // Create a new message element
-        const messageElement = document.createElement('div');
-        messageElement.classList.add(type);
-        messageElement.innerText = message;
+        const schedulerSystem = document.getElementById('searchSchedulerSystem').value;
 
-        // Append the message to the result container
-        container.appendChild(messageElement);
+        fetch(`/displays/search?schedulerSystem=${encodeURIComponent(schedulerSystem)}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.length > 0) {
+                    displayResults(data, resultContainer, `Displays for Scheduler: ${schedulerSystem}`);
+                } else {
+                    resultContainer.innerHTML = '<div class="error">No results found.</div>';
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                resultContainer.innerHTML = '<div class="error">Search failed.</div>';
+            });
+    });
+
+    // Handle Delete Form
+    document.getElementById('deleteForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const serialNo = document.getElementById('deleteSerialNo').value;
+
+        fetch(`/displays/${serialNo}`, {
+            method: 'DELETE',
+        })
+            .then((res) => res.text())
+            .then((data) => {
+                resultContainer.innerHTML = `<div class="success">${data}</div>`;
+            })
+            .catch((err) => {
+                console.error(err);
+                resultContainer.innerHTML = '<div class="error">Failed to delete display.</div>';
+            });
+    });
+
+    // Function to display results dynamically
+    function displayResults(data, container, title) {
+        container.innerHTML = `<h3>${title}</h3>`;
+        const list = document.createElement('ul');
+
+        data.forEach((item) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = JSON.stringify(item, null, 2);
+            list.appendChild(listItem);
+        });
+
+        container.appendChild(list);
     }
 });
+
 
