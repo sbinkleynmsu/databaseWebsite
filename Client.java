@@ -25,8 +25,10 @@ public class Client {
         String password = scan.nextLine();
         System.out.println("Please enter the database name:");
         String DBname = scan.nextLine();
+        System.out.println("Please enter the port:");
+        String port = scan.nextLine();
 
-        String URL = "jdbc:mysql://" + host + ":3306/" + DBname;
+        String URL = "jdbc:mysql://" + host + ":" + port + "/" + DBname;
 
 
         try {
@@ -55,97 +57,167 @@ public class Client {
                 choice = scan.nextInt();
 
 
-                //Question 1: Find sites by street
+                //1: Display all digital displays
                 if(choice == 1){
-                    if(args.length != 2){
-                        throw new IOException("INCORRECT USAGE ARGUMENTS SHOULD BE: \"1 <street name> \" ");
-                    }else{
-                        String streetName = args[1].replace("'", "").replace("\"", "");
-                        PreparedStatement prepState = connection.prepareStatement("SELECT * FROM Site WHERE address LIKE ?");
-                        prepState.setString(1, "%" + streetName + "%");
-                        resultSet = prepState.executeQuery();
+                    PreparedStatement baseState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
+                    resultSet = baseState.executeQuery();
 
-                        while (resultSet.next()) {
-                            emptySet = 1;
-                            System.out.printf("Site Code: %d, Type: %s, Address: %s, Phone: %s%n",
-                            resultSet.getInt("siteCode"),
-                            resultSet.getString("type"),
-                            resultSet.getString("address"),
-                            resultSet.getString("phone"));
-                        }
+                    System.out.println();
+                    while (resultSet.next()) {
+                        emptySet = 1;
+                        System.out.printf("SerialNo: %s, SchedulerSystem: %s, ModelNo: %s%n",
+                        resultSet.getString("serialNo"),
+                        resultSet.getString("schedulerSystem"),
+                        resultSet.getString("modelNo"));
                     }
+                    System.out.println();
+                    
+                    System.out.println("Choose a model number, if none type N: ");
+                    scan.nextLine();
+                    String modelNo = scan.nextLine();
+
+                    if(modelNo.equals("N")) break;
+                    PreparedStatement prepState = connection.prepareStatement("SELECT * FROM Model WHERE modelNo = ?");
+                    prepState.setString(1, modelNo);
+                    resultSet = prepState.executeQuery();
+
+                    System.out.println();
+                    while (resultSet.next()) {
+                        emptySet = 1;
+                        System.out.printf("ModelNo: %s, width: %.2f, height: %.2f, weight: %.2f, depth: %.2f, screenSize: %.2f%n",
+                        resultSet.getString("ModelNo"),
+                        resultSet.getDouble("width"),
+                        resultSet.getDouble("height"),
+                        resultSet.getDouble("weight"),
+                        resultSet.getDouble("depth"),
+                        resultSet.getDouble("screenSize"));
+                    }
+                    System.out.println();
                 }
 
-                //Question 2: Find digital displays by scheduler system
+                //2: Find digital displays by scheduler system
                 if(choice == 2){
-                    if(args.length != 2){
-                        throw new IOException("INCORRECT USAGE ARGUMENTS SHOULD BE: \"2 <scheduler system> \" ");
-                    }else{
-                        String schedSys = args[1].replace("'", "");
-                        PreparedStatement prepState = connection.prepareStatement("SELECT DigitalDisplay.serialNo, DigitalDisplay.modelNo, Model.screenSize " +
-                                                                    "FROM DigitalDisplay " +
-                                                                                    "JOIN Model ON DigitalDisplay.modelNo = Model.modelNo " +
-                                                                                    "WHERE DigitalDisplay.schedulerSystem = ?");
-                        prepState.setString(1, schedSys);
-                        resultSet = prepState.executeQuery();
-
-                        while (resultSet.next()) {
-                            emptySet = 1;
-                            System.out.printf("Serial No: %s, Model No: %s, Screen Size: %.2f%n",
-                            resultSet.getString("serialNo"),
-                            resultSet.getString("modelNo"),
-                            resultSet.getDouble("screenSize"));
-                        }
-                    }
-                }
-
-                //Question 3: List distinct salesmen and their count
-                if(choice == 3){
-                    String selectQuery = "SELECT name, COUNT(*) as cnt FROM Salesman GROUP BY name ORDER BY name ASC";
-                    resultSet = statement.executeQuery(selectQuery);
-
+                    System.out.println("Enter the scheduler system:");
+                    String schedSys = scan.nextLine();
+                    PreparedStatement stmt = connection.prepareStatement(
+                            "SELECT DigitalDisplay.serialNo, DigitalDisplay.modelNo, Model.screenSize " +
+                                    "FROM DigitalDisplay " +
+                                    "JOIN Model ON DigitalDisplay.modelNo = Model.modelNo " +
+                                    "WHERE DigitalDisplay.schedulerSystem = ?");
+                    stmt.setString(1, schedSys);
+                    resultSet = stmt.executeQuery();
+                    System.out.println();
                     while (resultSet.next()) {
-                        emptySet = 1;
-                        System.out.printf("Name: %s, Count: %d%n",
-                        resultSet.getString("name"),
-                        resultSet.getInt("cnt"));
+                        System.out.printf("SerialNo: %s, ModelNo: %s, ScreenSize: %.2f%n",
+                                resultSet.getString("serialNo"),
+                                resultSet.getString("modelNo"),
+                                resultSet.getDouble("screenSize"));
                     }
+                    System.out.println();
                 }
 
-                if(choice == 4){
-                    if(args.length != 2){
-                        throw new IOException("INCORRECT USAGE ARGUMENTS SHOULD BE: \"4 <phone no> \" ");
-                    }else{
-                        String phoneNo = args[1].replace("'", "");
-                        PreparedStatement prepState = connection.prepareStatement("SELECT * FROM Client WHERE phone = ?");
-                        prepState.setString(1, phoneNo);
-                        resultSet = prepState.executeQuery();
+                //3: Insert new digital display
+                if (choice == 3) {
+                    System.out.println("Enter serial number:");
+                    String serialNo = scan.nextLine();
+                    System.out.println("Enter scheduler system:");
+                    String schedSys = scan.nextLine();
+                    System.out.println("Enter model number:");
+                    String modelNo = scan.nextLine();
 
-                        while (resultSet.next()) {
-                            emptySet = 1;
-                            System.out.printf("Client ID: %d, Name: %s, Phone: %s, Address: %s%n",
-                            resultSet.getInt("clientId"),
-                            resultSet.getString("name"),
-                            resultSet.getString("phone"),
-                            resultSet.getString("address"));
-                        }
+                    PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Model WHERE modelNo = ?");
+                    stmt.setString(1, modelNo);
+                    resultSet = stmt.executeQuery();
+                    if (!resultSet.next()) {
+                        System.out.println("Model does not exist. Enter model details:");
+                        System.out.println("Width:");
+                        double width = scan.nextDouble();
+                        System.out.println("Height:");
+                        double height = scan.nextDouble();
+                        System.out.println("Weight:");
+                        double weight = scan.nextDouble();
+                        System.out.println("Depth:");
+                        double depth = scan.nextDouble();
+                        System.out.println("Screen size:");
+                        double screenSize = scan.nextDouble();
+                        scan.nextLine(); // Consume newline
+
+                        PreparedStatement insertModelStmt = connection.prepareStatement(
+                                "INSERT INTO Model (modelNo, width, height, weight, depth, screenSize) VALUES (?, ?, ?, ?, ?, ?)");
+                        insertModelStmt.setString(1, modelNo);
+                        insertModelStmt.setDouble(2, width);
+                        insertModelStmt.setDouble(3, height);
+                        insertModelStmt.setDouble(4, weight);
+                        insertModelStmt.setDouble(5, depth);
+                        insertModelStmt.setDouble(6, screenSize);
+                        insertModelStmt.executeUpdate();
                     }
+
+                    PreparedStatement insertDisplayStmt = connection.prepareStatement(
+                            "INSERT INTO DigitalDisplay (serialNo, schedulerSystem, modelNo) VALUES (?, ?, ?)");
+                    insertDisplayStmt.setString(1, serialNo);
+                    insertDisplayStmt.setString(2, schedSys);
+                    insertDisplayStmt.setString(3, modelNo);
+                    insertDisplayStmt.executeUpdate();
+                    System.out.println("Digital display inserted successfully.");
                 }
 
+                //4: update digital display
+                if (choice == 4) {
+                    System.out.println("Enter the serial number of the digital display to delete:");
+                    String serialNo = scan.nextLine();
+
+                    PreparedStatement stmt = connection.prepareStatement(
+                            "DELETE FROM DigitalDisplay WHERE serialNo = ?");
+                    stmt.setString(1, serialNo);
+                    stmt.executeUpdate();
+                    System.out.println("Digital display deleted successfully.");
+                }
+
+                //5: Update digital display 
                 if(choice == 5){
-                    String selectQuery = "With TempTable(AdId, THours) AS (SELECT empId, SUM(hours) FROM AdmWorkHours GROUP BY empId) SELECT " +
-                                        "Administrator.empId, Administrator.name, Temptable.THours FROM Administrator, TempTable WHERE Administrator.empId = TempTable.AdId ORDER BY TempTable.THours ASC";
-                    resultSet = statement.executeQuery(selectQuery);
+                    PreparedStatement baseState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
+                    resultSet = baseState.executeQuery();
 
+                    System.out.println();
                     while (resultSet.next()) {
                         emptySet = 1;
-                        int id = resultSet.getInt("empId");
-                        String name = resultSet.getString("name");
-                        double hours = resultSet.getDouble("Thours");
-
-                        System.out.println("ID: " + id + ", Name: " + name +
-                                        ", Total Hours: " + hours);
+                        System.out.printf("SerialNo: %s, SchedulerSystem: %s, ModelNo: %s%n",
+                        resultSet.getString("serialNo"),
+                        resultSet.getString("schedulerSystem"),
+                        resultSet.getString("modelNo"));
                     }
+                    System.out.println();
+                    
+                    System.out.println("Choose a serial number to update");
+                    scan.nextLine();
+                    String serialNo = scan.nextLine();
+
+                    System.out.println("Type new scheduler system");
+                    String schedSys = scan.nextLine();
+
+                    System.out.println("Type new modelNo");
+                    String modelNo = scan.nextLine();
+
+
+                    PreparedStatement prepState = connection.prepareStatement("UPDATE DigitalDisplay SET SchedulerSystem = ?, ModelNo = ? WHERE serialNo = ?");
+                    prepState.setString(1, schedSys);
+                    prepState.setString(2, modelNo);
+                    prepState.setString(3, serialNo);
+                    prepState.executeUpdate();
+
+                    PreparedStatement lastState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
+                    resultSet = lastState.executeQuery();
+
+                    System.out.println();
+                    while (resultSet.next()) {
+                        emptySet = 1;
+                        System.out.printf("SerialNo: %s, SchedulerSystem: %s, ModelNo: %s%n",
+                        resultSet.getString("serialNo"),
+                        resultSet.getString("schedulerSystem"),
+                        resultSet.getString("modelNo"));
+                    }
+                    System.out.println();
                 }
 
 
@@ -156,9 +228,7 @@ public class Client {
 
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (IOException e){
-             e.printStackTrace();
-        }
+        } 
         finally {
             // Close resources
             try {
