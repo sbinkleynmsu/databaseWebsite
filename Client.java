@@ -108,7 +108,7 @@ public class Client {
                     resultSet = stmt.executeQuery();
                     System.out.println();
                     while (resultSet.next()) {
-                        System.out.printf("SerialNo: %s, ModelNo: %s, SchedulerSystem: %s",
+                        System.out.printf("SerialNo: %s, ModelNo: %s, SchedulerSystem: %s%n",
                                 resultSet.getString("serialNo"),
                                 resultSet.getString("modelNo"),
                                 resultSet.getString("schedulerSystem"));
@@ -167,6 +167,8 @@ public class Client {
 
                 //4: delete digital display
                 if (choice == 4) {
+                    //display all digital displays
+                    // Step 1: Retrieve all digital displays
                     PreparedStatement baseState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
                     resultSet = baseState.executeQuery();
 
@@ -175,14 +177,58 @@ public class Client {
                     String serialNo = scan.nextLine();
                     if(serialNo.equals("N")) break;
 
-                    PreparedStatement stmt = connection.prepareStatement(
-                            "DELETE FROM DigitalDisplay WHERE serialNo = ?");
-                    stmt.setString(1, serialNo);
-                    stmt.executeUpdate();
-                    System.out.println("Digital display deleted successfully.");
+                    //get modelNo for the chosen digital display
+                    PreparedStatement getModel = connection.prepareStatement(
+                        "SELECT modelNo FROM DigitalDisplay WHERE serialNo = ?");
+                    getModel.setString(1, serialNo);
+                    ResultSet modelNoResult = getModel.executeQuery();
 
+                    if (modelNoResult.next()) {
+                        String modelNotDelete = modelNoResult.getString("modelNo");
+
+                        //check for more modelNo
+                        PreparedStatement checkModel = connection.prepareStatement(
+                            "SELECT COUNT(*) FROM DigitalDisplay WHERE modelNo = ?");
+                        checkModel.setString(1, modelNotDelete);
+                        ResultSet countResult = checkModel.executeQuery();
+
+                        if (countResult.next() && countResult.getInt(1) == 1) {
+                            //no other displays use modelNo, so delete this model
+                            PreparedStatement deleteModelStmt = connection.prepareStatement(
+                                "DELETE FROM model WHERE modelNo = ?");
+                            deleteModelStmt.setString(1, modelNotDelete);
+                            deleteModelStmt.executeUpdate();
+                            System.out.println("Model deleted successfully as no other displays use it.");
+                        }
+
+                        //delete the selected digital display
+                        PreparedStatement deleteDisplayStmt = connection.prepareStatement(
+                            "DELETE FROM DigitalDisplay WHERE serialNo = ?");
+                        deleteDisplayStmt.setString(1, serialNo);
+                        deleteDisplayStmt.executeUpdate();
+                        System.out.println("Digital display deleted successfully.");
+                    } 
+                    else {
+                        System.out.println("No digital display found with the given serial number.");
+                    }
+
+                    //display all remaining digital displays
                     PreparedStatement postState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
                     resultSet = postState.executeQuery();
+                    System.out.println("Remaining Digital Displays:");
+                    while (resultSet.next()) {
+                        System.out.println("SerialNo: " + resultSet.getString("serialNo") +
+                                        ", SchedulerSystem: " + resultSet.getString("schedulersystem") +
+                                        ", ModelNo: " + resultSet.getString("modelNo"));
+                    }
+
+                    //display models
+                    PreparedStatement postModelsState = connection.prepareStatement("SELECT * FROM model");
+                    resultSet = postModelsState.executeQuery();
+                    System.out.println("Remaining Models:");
+                    while (resultSet.next()) {
+                        System.out.println("ModelNo: " + resultSet.getString("modelNo"));
+                    }
                 }
 
                 //5: Update digital display 
