@@ -168,7 +168,7 @@ public class Client {
                 //4: delete digital display
                 if (choice == 4) {
                     //display all digital displays
-                    // Step 1: Retrieve all digital displays
+                    //print all digital displays
                     PreparedStatement baseState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
                     resultSet = baseState.executeQuery();
 
