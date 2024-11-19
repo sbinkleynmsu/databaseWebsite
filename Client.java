@@ -96,30 +96,32 @@ public class Client {
 
                 //2: Find digital displays by scheduler system
                 if(choice == 2){
-                    System.out.println("Enter the scheduler system:");
+                    System.out.println("Enter the scheduler system, enter N in none:");
                     scan.nextLine();
-                    String schedSys = scan.nextLine();
-                    PreparedStatement stmt = connection.prepareStatement(
-                            "SELECT DigitalDisplay.serialNo, DigitalDisplay.modelNo, Model.screenSize " +
-                                    "FROM DigitalDisplay " +
-                                    "JOIN Model ON DigitalDisplay.modelNo = Model.modelNo " +
-                                    "WHERE DigitalDisplay.schedulerSystem = ?");
+                    String schedSys = scan.nextLine(); 
+
+                    if(schedSys.equals("N")) break;
+                    
+                    PreparedStatement stmt = connection.prepareStatement("SELECT * FROM DigitalDisplay " +
+                                                                         "WHERE DigitalDisplay.schedulerSystem = ?");
                     stmt.setString(1, schedSys);
                     resultSet = stmt.executeQuery();
                     System.out.println();
                     while (resultSet.next()) {
-                        System.out.printf("SerialNo: %s, ModelNo: %s, ScreenSize: %.2f%n",
+                        System.out.printf("SerialNo: %s, ModelNo: %s, SchedulerSystem: %s",
                                 resultSet.getString("serialNo"),
                                 resultSet.getString("modelNo"),
-                                resultSet.getDouble("screenSize"));
+                                resultSet.getString("schedulerSystem"));
                     }
                     System.out.println();
                 }
 
                 //3: Insert new digital display
                 if (choice == 3) {
-                    System.out.println("Enter serial number:");
+                    System.out.println("Enter serial number, if none enter N:");
                     String serialNo = scan.nextLine();
+                    if(serialNo.equals("N")) break;
+
                     scan.nextLine();
                     System.out.println("Enter scheduler system:");
                     String schedSys = scan.nextLine();
@@ -168,9 +170,10 @@ public class Client {
                     PreparedStatement baseState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
                     resultSet = baseState.executeQuery();
 
-                    System.out.println("Enter the serial number of the digital display to delete:");
+                    System.out.println("Enter the serial number of the digital display to delete, enter N if none:");
                     scan.nextLine();
                     String serialNo = scan.nextLine();
+                    if(serialNo.equals("N")) break;
 
                     PreparedStatement stmt = connection.prepareStatement(
                             "DELETE FROM DigitalDisplay WHERE serialNo = ?");
