@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -98,6 +97,7 @@ public class Client {
                 //2: Find digital displays by scheduler system
                 if(choice == 2){
                     System.out.println("Enter the scheduler system:");
+                    scan.nextLine();
                     String schedSys = scan.nextLine();
                     PreparedStatement stmt = connection.prepareStatement(
                             "SELECT DigitalDisplay.serialNo, DigitalDisplay.modelNo, Model.screenSize " +
@@ -120,6 +120,7 @@ public class Client {
                 if (choice == 3) {
                     System.out.println("Enter serial number:");
                     String serialNo = scan.nextLine();
+                    scan.nextLine();
                     System.out.println("Enter scheduler system:");
                     String schedSys = scan.nextLine();
                     System.out.println("Enter model number:");
@@ -162,9 +163,13 @@ public class Client {
                     System.out.println("Digital display inserted successfully.");
                 }
 
-                //4: update digital display
+                //4: delete digital display
                 if (choice == 4) {
+                    PreparedStatement baseState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
+                    resultSet = baseState.executeQuery();
+
                     System.out.println("Enter the serial number of the digital display to delete:");
+                    scan.nextLine();
                     String serialNo = scan.nextLine();
 
                     PreparedStatement stmt = connection.prepareStatement(
@@ -172,6 +177,9 @@ public class Client {
                     stmt.setString(1, serialNo);
                     stmt.executeUpdate();
                     System.out.println("Digital display deleted successfully.");
+
+                    PreparedStatement postState = connection.prepareStatement("SELECT * FROM DigitalDisplay");
+                    resultSet = postState.executeQuery();
                 }
 
                 //5: Update digital display 
